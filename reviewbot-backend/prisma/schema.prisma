@@ -1,0 +1,125 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id              String          @id @default(cuid())
+  gitlabProjectId Int             @unique @map("gitlab_project_id")
+  name            String
+  namespace       String
+  webhookUrl      String?         @map("webhook_url")
+  webhookSecret   String          @map("webhook_secret")
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  metrics         ProjectMetrics?
+  reviews         Review[]
+
+  @@index([gitlabProjectId])
+  @@map("project")
+}
+
+model Developer {
+  id           String            @id @default(cuid())
+  gitlabUserId Int               @unique @map("gitlab_user_id")
+  username     String            @unique
+  email        String?
+  name         String?
+  avatarUrl    String?           @map("avatar_url")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  metrics      DeveloperMetrics?
+  reviews      Review[]
+
+  @@index([gitlabUserId])
+  @@index([username])
+  @@map("developer")
+}
+
+model Review {
+  id               String       @id @default(cuid())
+  mergeRequestId   Int          @map("merge_request_id")
+  mergeRequestIid  Int          @map("merge_request_iid")
+  projectId        String       @map("project_id")
+  developerId      String       @map("developer_id")
+  title            String
+  description      String?
+  reviewContent    Json         @map("review_content")
+  qualityScore     Float?       @map("quality_score")
+  issuesFound      Int          @default(0) @map("issues_found")
+  suggestionsCount Int          @default(0) @map("suggestions_count")
+  status           ReviewStatus @default(PENDING)
+  sourceUrl        String       @map("source_url")
+  targetBranch     String       @map("target_branch")
+  sourceBranch     String       @map("source_branch")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  codeChanges      CodeChange[]
+  developer        Developer    @relation(fields: [developerId], references: [id])
+  project          Project      @relation(fields: [projectId], references: [id])
+
+  @@unique([mergeRequestId, projectId])
+  @@index([mergeRequestId])
+  @@index([projectId, developerId])
+  @@index([createdAt])
+  @@map("review")
+}
+
+model CodeChange {
+  id        String   @id @default(cuid())
+  reviewId  String   @map("review_id")
+  filePath  String   @map("file_path")
+  oldPath   String?  @map("old_path")
+  newPath   String?  @map("new_path")
+  diff      String
+  additions Int      @default(0)
+  deletions Int      @default(0)
+  fileType  String?  @map("file_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("code_change")
+}
+
+model ProjectMetrics {
+  id               String    @id @default(cuid())
+  projectId        String    @unique @map("project_id")
+  totalReviews     Int       @default(0) @map("total_reviews")
+  averageScore     Float     @default(0) @map("average_score")
+  totalIssues      Int       @default(0) @map("total_issues")
+  totalSuggestions Int       @default(0) @map("total_suggestions")
+  lastReviewAt     DateTime? @map("last_review_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  project          Project   @relation(fields: [projectId], references: [id])
+
+  @@map("project_metrics")
+}
+
+model DeveloperMetrics {
+  id               String    @id @default(cuid())
+  developerId      String    @unique @map("developer_id")
+  totalReviews     Int       @default(0) @map("total_reviews")
+  averageScore     Float     @default(0) @map("average_score")
+  totalIssues      Int       @default(0) @map("total_issues")
+  totalSuggestions Int       @default(0) @map("total_suggestions")
+  commonIssues     Json?     @map("common_issues")
+  lastReviewAt     DateTime? @map("last_review_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  developer        Developer @relation(fields: [developerId], references: [id])
+
+  @@map("developer_metrics")
+}
+
+enum ReviewStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  SKIPPED
+}

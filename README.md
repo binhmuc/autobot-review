@@ -8,6 +8,25 @@
 
 Automated code review bot for GitLab using Azure OpenAI Haiku 4.5. Provides intelligent code analysis, security checks, performance suggestions, and inline comments directly on merge requests.
 
+## 📸 Screenshots
+
+### Dashboard
+![Dashboard Overview](./images/dashboard.png)
+*Real-time metrics showing code quality scores, issue breakdown, and review history*
+
+### GitLab Integration
+![Inline Comments](./images/inline-comments.jpeg)
+*AI-powered inline comments directly on merge request code changes*
+
+![MR Summary](./images/mr-summary.jpeg)
+*Comprehensive merge request summary with quality score and categorized issues*
+
+### Developer Analytics
+![Developer Metrics](./images/developer-metrics.png)
+*Track individual developer performance and improvement trends over time*
+
+> **Note**: Add your screenshots to the `/images` folder to display them here.
+
 ## 🌟 Features
 
 ### Code Review Intelligence

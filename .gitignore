@@ -82,3 +82,9 @@ ck.md
 # Test files
 test-*.js
 test-*.ts
+
+# Images - allow images folder for README
+!images/
+!images/*.png
+!images/*.jpg
+!images/*.gif
